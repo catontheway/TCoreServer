@@ -25,7 +25,10 @@ enum Spells
     SPELL_CHARGE                 = 60067,
     SPELL_FRIGHTENING_SHOUT      = 19134,
     SPELL_WHIRLWIND              = 38618,
-    SPELL_FROZEN_PRISON          = 47543
+    SPELL_FROZEN_PRISON          = 47543,
+    SPELL_FEAR                   = 65809,
+    SPELL_DIVINE_SHIELD          = 67251,
+    SPELL_ENRAGE                 = 78722
 };
 
 enum Yells
@@ -39,7 +42,8 @@ enum Events
 {
     EVENT_CHARGE_COMMANDER      = 1,
     EVENT_WHIRLWIND,
-    EVENT_FRIGHTENING_SHOUT
+    EVENT_FRIGHTENING_SHOUT,
+    EVENT_FEAR_TARGET
 };
 
 class boss_nexus_commanders : public CreatureScript
@@ -57,10 +61,12 @@ class boss_nexus_commanders : public CreatureScript
                 Talk(SAY_AGGRO);
                 me->RemoveAurasDueToSpell(SPELL_FROZEN_PRISON);
                 DoCast(me, SPELL_BATTLE_SHOUT);
+                DoCast(me, SPELL_ENRAGE);
 
                 events.ScheduleEvent(EVENT_CHARGE_COMMANDER, urand(3000, 4000));
                 events.ScheduleEvent(EVENT_WHIRLWIND, urand(6000, 8000));
                 events.ScheduleEvent(EVENT_FRIGHTENING_SHOUT, urand(13000, 15000));
+                events.ScheduleEvent(EVENT_FEAR_TARGET, urand(5000, 25000));
             }
 
             void ExecuteEvent(uint32 eventId) override
@@ -73,12 +79,18 @@ class boss_nexus_commanders : public CreatureScript
                         events.ScheduleEvent(EVENT_CHARGE_COMMANDER, urand(11000, 15000));
                         break;
                     case EVENT_WHIRLWIND:
+                        DoCast(me, SPELL_DIVINE_SHIELD);
                         DoCast(me, SPELL_WHIRLWIND);
-                        events.ScheduleEvent(EVENT_WHIRLWIND, urand(19500, 25000));
+                        events.ScheduleEvent(EVENT_WHIRLWIND, urand(10000, 20000));
                         break;
                     case EVENT_FRIGHTENING_SHOUT:
                         DoCastAOE(SPELL_FRIGHTENING_SHOUT);
                         events.ScheduleEvent(EVENT_FRIGHTENING_SHOUT, urand(45000, 55000));
+                        break;
+                    case EVENT_FEAR_TARGET:
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true))
+                            DoCast(target, SPELL_FEAR);
+                        events.ScheduleEvent(EVENT_FEAR_TARGET, urand(5000, 25000));
                         break;
                     default:
                         break;
@@ -93,8 +105,10 @@ class boss_nexus_commanders : public CreatureScript
 
             void KilledUnit(Unit* who) override
             {
-                if (who->GetTypeId() == TYPEID_PLAYER)
+                if (who->GetTypeId() == TYPEID_PLAYER) {
+                    DoCast(me, SPELL_ENRAGE);
                     Talk(SAY_KILL);
+                }
             }
         };
 
