@@ -18,6 +18,7 @@
 // This is where scripts' loading functions should be declared:
 void AddSC_boss_li();
 void AddSC_boss_blackne();
+void AddSC_boss_luis_rizo();
 
 // The name of this function should match:
 // void Add${NameOfDirectory}Scripts()
@@ -25,4 +26,5 @@ void AddCustomScripts()
 {
     AddSC_boss_li();
     AddSC_boss_blackne();
+    AddSC_boss_luis_rizo();
 }
